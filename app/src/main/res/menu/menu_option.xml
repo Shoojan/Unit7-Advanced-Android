@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/fetchApi"
+        android:icon="@drawable/baseline_api_24"
+        android:title="Fetch API" />
+    <item
+        android:id="@+id/fetchDb"
+        android:icon="@drawable/baseline_dataset_24"
+        android:iconTintMode="add"
+        android:title="Fetch SQLite" />
+</menu>
