@@ -36,7 +36,8 @@ public class SubjectAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.subject_item, parent, false);
+            convertView = LayoutInflater.from(context)
+                    .inflate(R.layout.subject_item, parent, false);
         }
 
         TextView nameTextView = convertView.findViewById(R.id.subject_name);

@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.fab_add).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 showAddSubjectDialog();
             }
         });
