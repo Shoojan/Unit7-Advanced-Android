@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +22,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import yuku.ambilwarna.AmbilWarnaDialog;
@@ -30,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     SQLiteHelper dbHelper;
     ListView subjectListView;
     List<Subject> subjectList;
+    SubjectAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         //Fetch the data from the database
         subjectList = dbHelper.getAllSubjects();
 
-        SubjectAdapter adapter = new SubjectAdapter(this, subjectList);
+        adapter = new SubjectAdapter(this, subjectList);
         subjectListView.setAdapter(adapter);
     }
 
@@ -185,4 +199,65 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_option, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.fetchApi) {
+            //Show Edit Dialog
+            fetchFromAPIUsingVolley();
+            return true;
+        } else if (itemId == R.id.fetchDb) {
+            loadSubjects();
+            return true;
+        } else
+            return super.onOptionsItemSelected(item);
+    }
+
+    private void fetchFromAPIUsingVolley() {
+        //Fetch the data from the database
+        subjectList = new ArrayList<>();
+        adapter = new SubjectAdapter(this, subjectList);
+        subjectListView.setAdapter(adapter);
+
+        String url = "https://jsonplaceholder.typicode.com/users";  // Example API
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                Request.Method.GET,
+                url,
+                null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        try {
+                            for (int i = 0; i < response.length(); i++) {
+                                JSONObject jsonObject = response.getJSONObject(i);
+                                int id = jsonObject.getInt("id");
+                                String name = jsonObject.getString("name");
+                                subjectList.add(new Subject(id, name, Color.GRAY));
+                            }
+                            adapter.notifyDataSetChanged();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "Parsing error!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(MainActivity.this, "Error fetching data! " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        requestQueue.add(jsonArrayRequest);
+    }
 }
