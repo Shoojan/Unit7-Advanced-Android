@@ -1,5 +1,6 @@
 package com.example.unit7_sqlite;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -67,6 +68,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     }
 
     // Get all subjects
+    @SuppressLint("Range")
     public List<Subject> getAllSubjects() {
         List<Subject> subjectList = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + TABLE_NAME;
@@ -75,7 +77,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                Subject subject = new Subject(
+                 Subject subject = new Subject(
                         cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
                         cursor.getString(cursor.getColumnIndex(COLUMN_NAME)),
                         cursor.getInt(cursor.getColumnIndex(COLUMN_COLOR))
