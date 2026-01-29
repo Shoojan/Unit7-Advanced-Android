@@ -40,7 +40,6 @@ import yuku.ambilwarna.AmbilWarnaDialog;
 
 public class MainActivity extends AppCompatActivity {
 
-    SQLiteHelper dbHelper;
     ListView subjectListView;
     List<Subject> subjectList;
     SubjectAdapter adapter;
@@ -56,10 +55,11 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        subjectListView = findViewById(R.id.subject_list);
+        this.subjectList = new ArrayList<>();
+        this.subjectList.add(new Subject(1, "Mobile Programming", Color.GREEN));
+        this.subjectList.add(new Subject(1, "Advanced Java", Color.RED));
 
-        // Instantiate SQLiteHelper
-        dbHelper = new SQLiteHelper(this);
+        subjectListView = findViewById(R.id.subject_list);
 
         // Load subjects from the database
         loadSubjects();
@@ -95,8 +95,7 @@ public class MainActivity extends AppCompatActivity {
             showEditSubjectDialog(selectedSubject);
             return true;
         } else if (itemId == R.id.delete) {
-            //Delete the data from the database
-            dbHelper.deleteSubject(selectedSubject.getId());
+            this.subjectList.remove(selectedSubject);
             // Refresh the list
             loadSubjects();
             return true;
@@ -105,9 +104,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadSubjects() {
-        //Fetch the data from the database
-        subjectList = dbHelper.getAllSubjects();
-
         adapter = new SubjectAdapter(this, subjectList);
         subjectListView.setAdapter(adapter);
     }
@@ -132,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                 int color = selectedColor[0];
 
                 if (!name.isEmpty()) {
-                    dbHelper.addSubject(name, color);
+                    subjectList.add(new Subject(color,name, color));
                     loadSubjects(); // Refresh the list
                 } else {
                     Toast.makeText(getApplicationContext(), "Please fill in the name", Toast.LENGTH_SHORT).show();
@@ -167,7 +163,12 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 String name = nameEditText.getText().toString();
                 if (!name.isEmpty()) {
-                    dbHelper.updateSubject(subject.getId(), name, selectedColor[0]);
+                    int index = subjectList.indexOf(subject);
+                    if(index >= 0){
+                        Subject subject1 = subjectList.get(index);
+                        subject1.setName(name);
+                        subject1.setColor(selectedColor[0]);
+                    }
                     loadSubjects(); // Refresh the list
                 } else {
                     Toast.makeText(MainActivity.this, "Please fill in the name", Toast.LENGTH_SHORT).show();
@@ -210,8 +211,6 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
         if (itemId == R.id.fetchApi) {
-            //Show Edit Dialog
-            fetchFromAPIUsingVolley();
             return true;
         } else if (itemId == R.id.fetchDb) {
             loadSubjects();
@@ -220,44 +219,4 @@ public class MainActivity extends AppCompatActivity {
             return super.onOptionsItemSelected(item);
     }
 
-    private void fetchFromAPIUsingVolley() {
-        //Fetch the data from the database
-        subjectList = new ArrayList<>();
-        adapter = new SubjectAdapter(this, subjectList);
-        subjectListView.setAdapter(adapter);
-
-        String url = "https://jsonplaceholder.typicode.com/users";  // Example API
-
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
-                Request.Method.GET,
-                url,
-                null,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        try {
-                            for (int i = 0; i < response.length(); i++) {
-                                JSONObject jsonObject = response.getJSONObject(i);
-                                int id = jsonObject.getInt("id");
-                                String name = jsonObject.getString("name");
-                                subjectList.add(new Subject(id, name, Color.GRAY));
-                            }
-                            adapter.notifyDataSetChanged();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "Parsing error!", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "Error fetching data! " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-        requestQueue.add(jsonArrayRequest);
-    }
 }

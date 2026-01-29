@@ -1,9 +1,9 @@
 package com.example.unit7_sqlite;
 
 public class Subject {
-    private final int id;
-    private final String name;
-    private final int color; // Store color as an int
+    private int id;
+    private String name;
+    private int color; // Store color as an int
 
     public Subject(int id, String name, int color) {
         this.id = id;
@@ -21,5 +21,13 @@ public class Subject {
 
     public int getColor() {
         return color;
+    }
+
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 }
